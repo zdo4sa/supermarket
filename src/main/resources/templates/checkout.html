@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>注文・配送日時指定</title>
+</head>
+<body style="background-color: #ffffff; color: #000000; font-family: sans-serif; padding: 20px;">
+
+    <h2>🏁 ご注文内容・配送日時指定</h2>
+
+    <!-- 【防衛線①】FR-10: 1月1日〜3日の正月三が日が選ばれた際、Java（OrderServlet）から届く強制拒否エラーを赤文字で表示 -->
+    <div th:if="${errorMessage}" style="border: 2px solid #ff0000; background-color: #fff0f0; padding: 15px; width: 600px; margin-bottom: 20px;">
+        <p th:text="${errorMessage}" style="color: #ff0000; font-weight: bold; margin: 0;">⚠️ ここにお正月営業外エラーテキストが表示されます。</p>
+    </div>
+
+    <!-- 💡 あなたの天才的な引き算：悪質客のデータ偽装・逃亡を根絶するため、配送先住所の入力欄（編集フォーム）は最初から1文字も作らず完全排除！ -->
+    <div style="border: 1px solid #ccc; padding: 15px; width: 570px; background-color: #fafafa; margin-bottom: 20px; line-height: 1.8;">
+        <strong>👤 【固定】お届け先・お客様情報（※身元確認済み）</strong><br>
+        ・お名前：<span th:text="${session.loginUser != null ? session.loginUser.fullName : 'テスト会員'}">テスト会員</span> 様<br>
+        ・配送先住所：<span th:text="${session.loginUser != null ? session.loginUser.address : '品川区大井1-1-1'}">品川区大井1-1-1</span><br>
+        ・電話番号：<span th:text="${session.loginUser != null ? session.loginUser.phoneNumber : '090-0000-0000'}">090-0000-0000</span><br>
+        <span style="color: #666; font-size: 13px;">※引っ越し等による正当な住所変更は、店舗窓口へ直接お電話ください。店長が裏側の管理画面から手動上書き救済を行います。</span>
+    </div>
+
+    <!-- 注文最終確定用の送信フォーム -->
+    <form th:action="@{/shop/checkout}" method="POST" style="line-height: 2;">
+        <!-- カートから引き継いだ合計金額をJava（OrderServlet）へ引き渡す -->
+        <input type="hidden" name="totalAmount" th:value="${param.totalAmount != null ? param.totalAmount : 3000}">
+
+        <label style="font-weight: bold; font-size: 16px;">📅 希望配送日をカレンダーから選択（最短翌日〜最大30日先まで）：</label><br>
+        <!-- 
+            💡 実際の実装時は、Java側で計算した「LocalDate.now().plusDays(1)」を th:min に設定し、
+            「LocalDate.now().plusDays(30)」を th:max に全自動で埋め込んで過去日や遠い未来のねじ込みをロックします。
+        -->
+        <input type="date" name="deliveryDate" required style="padding: 10px; font-size: 16px; width: 250px;"><br>
+        <span style="color: #ff0000; font-size: 14px; font-weight: bold;">⚠️ 注意：1月1日〜1月3日は店舗休業日（正月三が日）のため選択できません。</span><br><br>
+
+        <div style="background-color: #fff9e6; border: 1px solid #ffcc00; padding: 15px; width: 570px; margin-bottom: 20px; line-height: 1.6;">
+            <strong>💵 【一律固定】決済方法・お支払いについて</strong><br>
+            当店の決済方法は<strong>「現地代引き（現金払い）」のみの一律完全固定</strong>となります。配送当日にスタッフがお客様の玄関先まで商品をお届けに伺いますので、お釣りのないよう現金のご用意をお願い申し上げます。
+        </div>
+
+        <!-- 朝9:00の開店ダッシュ連打時に、配送便・予約枠へのダブル行ロック（FOR UPDATE）を発動させる最終確定ボタン -->
+        <button type="submit" style="padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; background-color: #008000; color: #ffffff; border: none;">
+            🏁 この内容で注文を最終確定する
+        </button>
+    </form>
+
+    <br>
+    <p><a th:href="@{/shop/cart}">⇒ 買い物かごに戻る</a></p>
+
+</body>
+</html>

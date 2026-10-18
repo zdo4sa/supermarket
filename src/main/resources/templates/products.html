@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品カタログ一覧</title>
+</head>
+<body style="background-color: #ffffff; color: #000000; font-family: sans-serif; padding: 20px;">
+
+    <header style="border-bottom: 2px solid #000000; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2>🛒 金剛不壊ネットスーパー 商品カタログ</h2>
+        <p>ようこそ、<strong th:text="${session.loginUser != null ? session.loginUser.fullName : 'ゲスト'}">テスト会員</strong> 様</p>
+        <nav style="font-weight: bold;">
+            <a th:href="@{/shop/cart}" style="color: #0000ff; text-decoration: none; margin-right: 15px;">［ 🛒 買い物かごを確認 ］</a> | 
+            <a th:href="@{/shop/orders/history}" style="color: #0000ff; text-decoration: none; margin-right: 15px; margin-left: 15px;">［ 📋 注文履歴・明細 ］</a> | 
+            <a th:href="@{/shop/profile/password}" style="color: #0000ff; text-decoration: none; margin-right: 15px; margin-left: 15px;">［ 🔓 パスワード変更 ］</a> | 
+            <a th:href="@{/login}" style="color: #ff0000; text-decoration: none; margin-left: 15px;">［ 🚪 ログアウト ］</a>
+        </nav>
+    </header>
+
+    <!-- ★あなたの神指摘を完全反映：余計な検索窓は一切作らず完全抹消・廃止！ -->
+    <p style="background-color: #f0f0f0; padding: 10px; font-size: 14px; width: 600px; border-left: 5px solid #000000;">
+        💡 <strong>お探しの商品を見つけたい場合：</strong><br>
+        パソコンの方は <strong>[Command + F]</strong> または <strong>[Ctrl + F]</strong> キーを押し、ブラウザのページ内検索機能を使って「イチゴ」や「米」と打ち込むと、一瞬で対象の商品へジャンプできます。
+    </p>
+
+    <main style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
+        
+        <!-- 💡 実際の実装時は、Java（OrderServlet）側から productsマスタのListを受け取って th:each でループ表示させます -->
+        
+        <!-- 商品カード①：生鮮食品（廃棄対象）の表示イメージ -->
+        <div style="border: 1px solid #000000; padding: 15px; width: 600px; display: flex; gap: 20px; align-items: center;">
+            <!-- フリー素材の商品写真URLをJavaから吸い上げて表示 -->
+            <img src="https://unsplash.com" alt="高級イチゴ" style="width: 120px; height: 120px; object-fit: cover; border: 1px solid #ccc;">
+            <div>
+                <h3 style="margin: 0 0 10px 0;">🍓 高級イチゴ（朝採れ厳選ロット）</h3>
+                <p style="margin: 5px 0;">通常単価：<strong style="font-size: 18px;">500 円</strong></p>
+                
+                <!-- ★お届け当日ロット保証：商品固有の保証日数をJavaが自動足し算してJSP/HTMLへ明示 [FR-07] -->
+                <p style="color: #ff0000; font-weight: bold; margin: 5px 0; background-color: #fff0f0; padding: 5px; display: inline-block;">
+                    📢 【本日出荷分の消費期限保証】：2026年7月8日まで安心！
+                </p>
+                
+                <form th:action="@{/shop/cart/add}" method="POST" style="margin-top: 10px;">
+                    <input type="hidden" name="productId" value="1">
+                    数量：<input type="number" name="quantity" value="1" min="1" max="10" style="width: 50px; padding: 5px;"> 
+                    <button type="submit" style="padding: 5px 10px; font-weight: bold; cursor: pointer;">🛒 カートに追加</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 商品カード②：常温・長期保存品（2回目配送流用キープ対象）の表示イメージ -->
+        <div style="border: 1px solid #000000; padding: 15px; width: 600px; display: flex; gap: 20px; align-items: center;">
+            <img src="https://unsplash.com" alt="お米 5kg" style="width: 120px; height: 120px; object-fit: cover; border: 1px solid #ccc;">
+            <div>
+                <h3 style="margin: 0 0 10px 0;">🌾 特選お米 5kg（新潟県産コシヒカリ）</h3>
+                <p style="margin: 5px 0;">通常単価：<strong style="font-size: 18px;">2,500 円</strong></p>
+                <p style="color: #008000; font-weight: bold; margin: 5px 0; background-color: #f0fff0; padding: 5px; display: inline-block;">
+                    📦 日用品・長期保存可能品（現地ご不在時の2回目再送流用キープ対象商品）
+                </p>
+                
+                <form th:action="@{/shop/cart/add}" method="POST" style="margin-top: 10px;">
+                    <input type="hidden" name="productId" value="2">
+                    数量：<input type="number" name="quantity" value="1" min="1" max="5" style="width: 50px; padding: 5px;"> 
+                    <button type="submit" style="padding: 5px 10px; font-weight: bold; cursor: pointer;">🛒 カートに追加</button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

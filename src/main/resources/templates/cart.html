@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>買い物かご（カート）確認</title>
+</head>
+<body style="background-color: #ffffff; color: #000000; font-family: sans-serif; padding: 20px;">
+
+    <h2>🛒 買い物かご（カート）の中身確認</h2>
+
+    <!-- 【防衛線①】FR-11: 夜間21:01〜翌朝8:59の営業時間外や、10万円上限エラー等の警告を赤文字で明示 -->
+    <div th:if="${errorMessage}" style="border: 2px solid #ff0000; background-color: #fff0f0; padding: 15px; width: 600px; margin-bottom: 20px;">
+        <p th:text="${errorMessage}" style="color: #ff0000; font-weight: bold; margin: 0;">⚠️ ここに営業時間外お詫び文や金額上限警告が表示されます。</p>
+    </div>
+
+    <!-- 💡 実際の実装時は、セッションのカート内Listを th:each でループ表示させます -->
+    <table border="1" style="border-collapse: collapse; width: 600px; text-align: center; line-height: 2;">
+        <tr style="background-color: #f2f2f2;">
+            <th>商品名</th>
+            <th>通常単価</th>
+            <th>数量</th>
+            <th>小計</th>
+            <th>操作</th>
+        </tr>
+        <tr>
+            <td>🍓 高級イチゴ</td>
+            <td>500 円</td>
+            <td>1</td>
+            <td>500 円</td>
+            <td><button type="button" style="cursor: pointer;">🗑️ 削除</button></td>
+        </tr>
+        <tr>
+            <td>🌾 特選お米 5kg</td>
+            <td>2,500 円</td>
+            <td>1</td>
+            <td>2,500 円</td>
+            <td><button type="button" style="cursor: pointer;">🗑️ 削除</button></td>
+        </tr>
+        <tr style="font-weight: bold; background-color: #fafafa;">
+            <td colspan="3" style="text-align: right; padding-right: 10px;">合計金額：</td>
+            <td colspan="2" style="color: #ff0000; font-size: 18px;">3,000 円</td>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- 購入手続き用の送信フォーム（G08チェックアウト画面へ引き渡し） -->
+    <form th:action="@{/shop/checkout}" method="GET" style="line-height: 1.8;">
+        <!-- Java側へ合計金額を渡す隠しパラメータ -->
+        <input type="hidden" name="totalAmount" value="3000">
+
+        <!-- 【防衛線②】FR-08: 過去未回収トラブルから手動申請で復帰したお客様（セッション内の残高 > 0）のみに強制表示 -->
+        <!-- 💡 実際は th:if="${session.loginUser.penaltyBalance > 0}" などで制御します -->
+        <div style="border: 2px solid #0000ff; background-color: #f0f5ff; padding: 15px; width: 570px; margin-bottom: 15px;">
+            <p style="color: #0000ff; font-weight: bold; margin: 0 0 10px 0;">📢 前回の現地未回収ペナルティ残高に関する合算同意</p>
+            <p style="font-size: 14px; margin: 0 0 10px 0;">
+                お客様のアカウントには、前回の配送時における「現地未回収残高（例：3,000円）」が残っております。<br>
+                今回の代引きお支払い時に、**前回の残高を全自動で合算（今回の3,000円＋前回3,000円＝計6,000円）してお支払いいただくこと**に同意をお願い申し上げます。
+            </p>
+            <input type="checkbox" name="penaltyAgree" value="true" id="penalty" required>
+            <label for="penalty"><strong>過去債務の代引き一括自動合算に完全に同意します（チェック必須）</strong></label>
+        </div>
+
+        <!-- 最低2,000円以上、一回10万円以下、夜間閉鎖中でなければ活性化する購入手続きボタン -->
+        <button type="submit" style="padding: 12px 25px; font-size: 16px; font-weight: bold; cursor: pointer; background-color: #000000; color: #ffffff; border: none;">
+            🚪 安全に購入手続きへ進む
+        </button>
+    </form>
+
+    <br>
+    <p><a th:href="@{/shop/products}">⇒ お買い物に戻る（商品カタログ一覧へ）</a></p>
+
+</body>
+</html>

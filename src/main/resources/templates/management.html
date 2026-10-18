@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>最高管理者・総合管理マスタ</title>
+</head>
+<body style="background-color: #ffffff; color: #000000; font-family: sans-serif; padding: 20px;">
+
+    <header style="border-bottom: 2px solid #000000; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2>👑 【最高管理者】配送便枠・商品・ユーザー総合管理マスタ</h2>
+        <nav style="font-weight: bold;">
+            <a th:href="@{/owner/reports}" style="color: #0000ff; text-decoration: none; margin-right: 15px;">［ 📊 報告書一覧・売上日報 ］</a> | 
+            <a th:href="@{/owner/staff/register}" style="color: #0000ff; text-decoration: none; margin-right: 15px; margin-left: 15px;">［ 🚚 スタッフアカウント新規作成 ］</a> | 
+            <a th:href="@{/owner/product/add}" style="color: #0000ff; text-decoration: none; margin-left: 15px;">［ 📦 商品新規追加登録 ］</a>
+        </nav>
+    </header>
+
+    <!-- 操作成功・失敗時の通知テキストエリア -->
+    <p th:if="${successMessage}" th:text="${successMessage}" style="color: #008000; font-weight: bold;">📊 成功メッセージ</p>
+    <p th:if="${errorMessage}" th:text="${errorMessage}" style="color: #ff0000; font-weight: bold;">⚠️ エラーメッセージ</p>
+
+    <!-- ========================================================== -->
+    <!-- 🚚 セクション1：1. 配送スタッフ一覧テーブル（role = 'staff'） -->
+    <!-- ========================================================== -->
+    <h3>🚚 1. 自社配送スタッフ一覧（アカウント整理・管理）</h3>
+    <table border="1" style="border-collapse: collapse; width: 800px; text-align: center; line-height: 2; margin-bottom: 30px;">
+        <tr style="background-color: #e6f2ff;">
+            <th>スタッフID</th>
+            <th>ログインID</th>
+            <th>氏名</th>
+            <th>連絡先電話番号</th>
+            <th>操作</th>
+        </tr>
+        <!-- Java側で仕分けられたスタッフリストをループ表示 -->
+        <tr th:each="staff : ${staffList}">
+            <td th:text="${staff.id}">105</td>
+            <td th:text="${staff.username}">staff_a</td>
+            <td th:text="${staff.fullName}">配送員A</td>
+            <td th:text="${staff.phoneNumber}">090-1111-1111</td>
+            <td>
+                <!-- 退職したスタッフのアクセス権を一瞬で安全に剥奪するボタン（※本番時はdeleteアクションへ送信） -->
+                <button type="button" style="color: #ff0000; font-weight: bold; cursor: pointer;">🗑️ 退職に伴うアカウント削除</button>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(staffList)}">
+            <td colspan="5" style="color: #666;">現在、登録されている配送スタッフはいません。</td>
+        </tr>
+    </table>
+
+
+    <!-- ========================================================== -->
+    <!-- 👥 セクション2：2. 顧客アカウント一覧テーブル（手動更生・代理上書き） -->
+    <!-- ========================================================== -->
+    <h3>👥 2. 顧客アカウントマスタ一覧（未回収リスク管理・更生救済窓口）</h3>
+    <p style="font-size: 14px; color: #555; background-color: #fafafa; padding: 10px; width: 780px; border-left: 5px solid #000000;">
+        💡 <strong>【店長（オーナー）の価格・防犯主権ルール】：</strong><br>
+        トラブルを起こしたアカウントの自動期限解放は100%永久に禁止されています。お客様が店舗の窓口へ直接完済を申請し、未払い金が0円になったことを目視確認した後に［🔓 凍結解除］を押して通常再開させてください。
+    </p>
+
+    <table border="1" style="border-collapse: collapse; width: 1000px; text-align: center; line-height: 2;">
+        <tr style="background-color: #f2f2f2;">
+            <th>顧客ID</th>
+            <th>ログインID</th>
+            <th>現在の権限</th>
+            <th>氏名</th>
+            <th>前回の未回収残高</th>
+            <th>登録先住所の代理手動上書きフォーム</th>
+            <th>アカウント復帰</th>
+        </tr>
+        <!-- Java側で仕分けられた顧客リスト（一時停止 disabled も含む）をループ表示 -->
+        <tr th:each="cust : ${customerList}">
+            <td th:text="${cust.id}">501</td>
+            <td th:text="${cust.username}">user_b</td>
+            <!-- roleの見た目を優しく仕分け -->
+            <td>
+                <span th:if="${cust.role == 'customer'}" style="color: #008000; font-weight: bold;">通常会員</span>
+                <span th:if="${cust.role == 'disabled'}" style="color: #ff0000; font-weight: bold;">🛑 一時利用停止</span>
+            </td>
+            <td th:text="${cust.fullName}">通常顧客B</td>
+            <td th:text="${cust.penaltyBalance + ' 円'}" th:style="${cust.penaltyBalance > 0 ? 'color: #ff0000; font-weight: bold;' : ''}">0 円</td>
+            
+            <!-- ★あなたの確定仕様①：新住民の冤罪救済や引っ越しのための、店長による住所の代理手動上書き更新 -->
+            <td>
+                <form th:action="@{/owner/management}" method="POST" style="margin: 5px 0; display: inline-block;">
+                    <input type="hidden" name="action" value="updateAddress">
+                    <input type="hidden" name="userId" th:value="${cust.id}">
+                    住：<input type="text" name="newAddress" th:value="${cust.address}" required style="width: 180px;"><br>
+                    TEL：<input type="text" name="newPhone" th:value="${cust.phoneNumber}" required style="width: 100px;">
+                    <button type="submit" style="cursor: pointer; font-size: 12px;">💾 代理保存</button>
+                </form>
+            </td>
+            
+            <!-- ★あなたの確定仕様②：完済客（0円）からの手動電話申請があったときだけ、店長がポチッと許して一発復帰させるボタン -->
+            <td>
+                <form th:action="@{/owner/management}" method="POST" style="display: inline-block;" th:if="${cust.role == 'disabled'}">
+                    <input type="hidden" name="action" value="unlock">
+                    <input type="hidden" name="userId" th:value="${cust.id}">
+                    <!-- 未払い残高が0円（完済）の誠意ある人だけ活性化し、1円以上残っている間はインフラでボタンをロックして弾く！ -->
+                    <button type="submit" th:disabled="${cust.penaltyBalance > 0}" style="font-weight: bold; cursor: pointer;">
+                        🔓 凍結解除(通常再開)
+                    </button>
+                </form>
+                <span th:if="${cust.role == 'customer'}" style="color: #666; font-size: 13px;">利用中</span>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
